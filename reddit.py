@@ -9,7 +9,7 @@ import praw
 def redditkey():
     #saving information to database
     def save_information(redditid, redditsecret):
-        conn = sqlite3.connect('./cogs/reddit.db')
+        conn = sqlite3.connect('./cogs/reddit/reddit.db')
         conn.execute('''CREATE TABLE IF NOT EXISTS saved_information (
             redditid text,
             redditsecret text);
@@ -21,7 +21,7 @@ def redditkey():
         conn.close()
         return(redditid, redditsecret)
 
-    conn = sqlite3.connect('./cogs/reddit.db')
+    conn = sqlite3.connect('./cogs/reddit/reddit.db')
     try:
         #attempt login discord
         cur = conn.cursor()
@@ -82,7 +82,6 @@ class reddit(commands.Cog):
     async def reddit(self, ctx, *, search: str):
         original_search = search
         try:
-            print(search, '|', end=' ')
             if 'r/' in search:
                 #treat as subreddit
                 search = search.split('/')
