@@ -15,7 +15,8 @@ Password = os.getenv("Postgres_Password")
 IP = os.getenv("Postgres_Server_IP")
 Username = os.getenv("Postgres_Username")
 
-# This uses a backend PostgreSQL DB instead of SQLite3. This is recommended over the SQLite3 option, since this allows faster concurrent read/writes and doesn't lock up the database as easily as the SQLite3 version
+# This uses a backend PostgreSQL DB instead of SQLite3. This is recommended over the SQLite3 option
+# Since this allows faster concurrent read/writes and doesn't lock up the database as easily as the SQLite3 version
 # MAKE SURE YOU HAVE A POSTGRES SERVER RUNNING WTIH THE DB NAMED "disquest" AND THE INFO STORED IN A .ENV FILE
 # INSTALL THE LIBS AS NEEDED
 class helper:
