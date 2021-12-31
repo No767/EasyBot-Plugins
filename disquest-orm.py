@@ -5,7 +5,7 @@ import random
 import discord
 from discord.ext import commands
 from sqlalchemy import (Column, Integer, MetaData, Table, create_engine, func,
-                        select)
+                        select, BigInteger, Sequence)
 
 
 class helper:
@@ -26,26 +26,28 @@ class disaccount:
         users = Table(
             "user",
             meta,
-            Column("id", Integer),
-            Column("gid", Integer),
+            Column(
+                "tracking_id",
+                Integer,
+                Sequence("tracking_id"),
+                primary_key=True,
+                autoincrement=True,
+            ),
+            Column("id", BigInteger),
+            Column("gid", BigInteger),
             Column("xp", Integer),
         )
         conn = engine.connect()
-        while True:
-            s = select(Column("xp", Integer)).where(
-                users.c.id == self.id, users.c.gid == self.gid
-            )
-            results = conn.execute(s)
-            xp = results.fetchone()
-
-            if xp == None:
-                ins = users.insert().values(id=self.id, gid=self.gid, xp=0)
-                conn.execute(ins)
-            else:
-                xp = xp[0]
-                break
+        s = select(users.c.xp).where(
+            users.c.id == self.id, users.c.gid == self.gid)
+        results = conn.execute(s).fetchone()
+        if results is None:
+            insert_new = users.insert().values(xp=0, id=self.id, gid=self.gid)
+            conn.execute(insert_new)
+        else:
+            for row in results:
+                return row
         conn.close()
-        return xp
 
     def setxp(self, xp):
         meta = MetaData()
@@ -53,12 +55,24 @@ class disaccount:
         users = Table(
             "user",
             meta,
-            Column("id", Integer),
-            Column("gid", Integer),
+            Column(
+                "tracking_id",
+                Integer,
+                Sequence("tracking_id"),
+                primary_key=True,
+                autoincrement=True,
+            ),
+            Column("id", BigInteger),
+            Column("gid", BigInteger),
             Column("xp", Integer),
         )
         conn = engine.connect()
-        update_values = users.update().values(xp=xp, id=self.id, gid=self.gid)
+        update_values = (
+            users.update()
+            .values(xp=xp) 
+            .filter(users.c.id == self.id) # check for the row that contains the user id and guild id
+            .filter(users.c.gid == self.gid) # to prevent overwritting the whole xp column
+        )
         conn.execute(update_values)
         conn.close()
 
@@ -86,10 +100,17 @@ class DisQuest(commands.Cog):
         meta = MetaData()
         engine = create_engine("sqlite:///disquest/user.db")
         Table(
-            "user.db",
+            "user",
             meta,
-            Column("id", Integer),
-            Column("gid", Integer),
+            Column(
+                "tracking_id",
+                Integer,
+                Sequence("tracking_id"),
+                primary_key=True,
+                autoincrement=True,
+            ),
+            Column("id", BigInteger),
+            Column("gid", BigInteger),
             Column("xp", Integer),
         )
         meta.create_all(engine)
@@ -119,17 +140,24 @@ class DisQuest(commands.Cog):
         users = Table(
             "user",
             meta,
-            Column("id", Integer),
-            Column("gid", Integer),
+            Column(
+                "tracking_id",
+                Integer,
+                Sequence("tracking_id"),
+                primary_key=True,
+                autoincrement=True,
+            ),
+            Column("id", BigInteger),
+            Column("gid", BigInteger),
             Column("xp", Integer),
         )
         conn = engine.connect()
         s = (
-            select(Column("id", Integer), Column("xp", Integer))
-            .filter((users.c.gid.is_(gid)))
+            select(Column("id", BigInteger), Column("xp", Integer))
+            .where(users.c.gid == gid)
             .order_by(users.c.xp.desc())
         )
-        results = conn.execute(s).fetchall()
+        results = conn.execute(s)
         members = list(results.fetchall())
         for i, mem in enumerate(members):
             members[
@@ -149,14 +177,22 @@ class DisQuest(commands.Cog):
         users = Table(
             "user",
             meta,
-            Column("id", Integer),
-            Column("gid", Integer),
+            Column(
+                "tracking_id",
+                Integer,
+                Sequence("tracking_id"),
+                primary_key=True,
+                autoincrement=True,
+            ),
+            Column("id", BigInteger),
+            Column("gid", BigInteger),
             Column("xp", Integer),
         )
         conn = engine.connect()
         s = (
             select(Column("id", Integer), func.sum(users.c.xp).label("txp"))
             .group_by(users.c.id)
+            .group_by(users.c.xp)
             .order_by(users.c.xp.desc())
         )
         results = conn.execute(s).fetchall()
