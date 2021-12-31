@@ -24,4 +24,4 @@ Once installed, open up a query console and run this query:
 CREATE DATABASE disquest;
 ```
 
-Once done, that's it. The cog will take care of the rest
+Once done, that's it. The cog will take care of the rest. And also as a side note, DisQuest-Postgres is the exact same version used by [Rin](https://github.com/No767/Rin) and [Kumiko](https://github.com/No767/Kumiko)
