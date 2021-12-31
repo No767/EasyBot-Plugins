@@ -24,4 +24,6 @@ Once installed, open up a query console and run this query:
 CREATE DATABASE disquest;
 ```
 
+Make sure to also go to the `disquest-postgres.py` file, and make a `.env file`. Add the following: `Postgres_Password`, `Postgres_Server_IP`, and `Postgres_Username`. The password and username is the account that you are going to use to access the database, and the server ip address can be either set as a IPv4 address, or if you are hosting it locally, `127.0.0.1`. Note that if you hosting the database somewhere else (like on AWS, Azure, or GCP), you will need to set the server ip address to the public ip address of the server.
+
 Once done, that's it. The cog will take care of the rest. And also as a side note, DisQuest-Postgres is the exact same version used by [Rin](https://github.com/No767/Rin) and [Kumiko](https://github.com/No767/Kumiko)
