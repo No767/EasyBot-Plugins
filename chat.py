@@ -1,5 +1,5 @@
 from discord.ext import commands
-import json
+import orjson
 
 class Chat(commands.Cog):
 
@@ -24,7 +24,7 @@ class Chat(commands.Cog):
                 try:
                     msg_responses = dict(ping = inputs[0], pong = inputs[1])
                     response_file = open('./cogs/chat/responses.json', 'a')
-                    response_file.write(f'{json.dumps(msg_responses)}\n')
+                    response_file.write(f'{orjson.dumps(msg_responses)}\n')
                 except Exception as e:
                     await message.channel.send('The syntax is incorrect. Please type in the format "update [input word], [response]". \nThis will make it so that when a user types [input word], the bot will say [response].')
                     print(e)
@@ -32,7 +32,7 @@ class Chat(commands.Cog):
                 try:
                     msg_save = open('./cogs/chat/responses.json', 'r')
                     msg_responses = msg_save.readlines()
-                    msg_responses = [json.loads(s.replace('\n', '')) for s in msg_responses]
+                    msg_responses = [orson.loads(s.replace('\n', '')) for s in msg_responses]
                     msg_save.close()
                     for i in msg_responses:
                         if i['ping'] == msg:
