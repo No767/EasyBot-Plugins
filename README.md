@@ -1,6 +1,6 @@
 # EasyBot-Plugins
 
-The official first party plugins for EasyBot by Chisaku-Dev
+The official first party plugins for EasyBot by Chisaku-Dev (and No767)
 
 # Installing
 
