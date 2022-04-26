@@ -1,34 +1,28 @@
+# --------- Notes ---------
+# This version uses PostgreSQL as the backend database
+# The reason why is that SQLite3 locks up very fast and is not recommended for cogs like these, where high read/write speeds are key
+# Make sure to have an PostgreSQL server running, and a database called "disquest"
+
+import asyncio
 import math
 import os
 import random
 
 import discord
+import uvloop
+from discord.commands import slash_command
 from discord.ext import commands
-from sqlalchemy import (Column, Integer, MetaData, Table, create_engine, func,
-                        select, BigInteger, Sequence)
-from sqlalchemy.ext.asyncio import create_async_engine
-
 from dotenv import load_dotenv
-
+from sqlalchemy import (BigInteger, Column, Integer, MetaData, Sequence, Table,
+                        func, select)
+from sqlalchemy.ext.asyncio import create_async_engine
 
 load_dotenv()
 
-# Create an .env file and make sure that the environment variables are set to the exact
-# names within the strings
-
+# Make sure to create an .env file and add the env values
 Password = os.getenv("Postgres_Password")
 IP = os.getenv("Postgres_Server_IP")
 Username = os.getenv("Postgres_Username")
-
-# This version uses PostgreSQL as the backend database
-# The reason why is that SQLite3 locks up very fast and is not recommended for cogs like these, where high read/write speeds are key
-# Make sure to have an PostgreSQL server running, and a database called "disquest"
-
-class helper:
-    def fast_embed(content):
-        colors = [0x8B77BE, 0xA189E2, 0xCF91D1, 0x5665AA, 0xA3A3D2]
-        selector = random.choice(colors)
-        return discord.Embed(description=content, color=selector)
 
 
 class disaccount:
@@ -42,7 +36,7 @@ class disaccount:
             f"postgresql+asyncpg://{Username}:{Password}@{IP}:5432/disquest"
         )
         users = Table(
-            "user",
+            "users",
             meta,
             Column(
                 "tracking_id",
@@ -70,10 +64,10 @@ class disaccount:
     async def setxp(self, xp):
         meta = MetaData()
         engine = create_async_engine(
-            f"postgresql+asyncpg://{Username}:{Password}@{IP}:5432/disquest"
+            f"postgresql+asyncpg://{Username}:{Password}@{IP}:5432/rin-disquest"
         )
         users = Table(
-            "user",
+            "users",
             meta,
             Column(
                 "tracking_id",
@@ -113,33 +107,13 @@ class lvl:
 
 
 class DisQuest(commands.Cog):
-    async def __init__(self, bot):
+    def __init__(self, bot):
         self.bot = bot
-        os.chdir(os.path.dirname(__file__))
-        meta = MetaData()
-        engine = create_async_engine(
-            f"postgresql+asyncpg://{Username}:{Password}@{IP}:5432/disquest"
-        )
-        Table(
-            "user",
-            meta,
-            Column(
-                "tracking_id",
-                Integer,
-                Sequence("tracking_id"),
-                primary_key=True,
-                autoincrement=True,
-            ),
-            Column("id", BigInteger),
-            Column("gid", BigInteger),
-            Column("xp", Integer),
-        )
-        async with engine.connect() as conn:
-            await conn.run_sync(meta.create_all)
 
-    @commands.command(
+    @slash_command(
         name="mylvl",
-        help="Displays your activity level!",
+        description="Displays your activity level!",
+        guild_ids=[866199405090308116],
     )
     async def mylvl(self, ctx):
         user = disaccount(ctx)
@@ -150,19 +124,31 @@ class DisQuest(commands.Cog):
         embedVar.add_field(name="LVL", value=f"{lvl.cur(xp)}", inline=True)
         embedVar.add_field(
             name="XP", value=f"{xp}/{lvl.next(xp)*100}", inline=True)
-        await ctx.send(embed=embedVar)
+        await ctx.respond(embed=embedVar)
+
+    asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+
+
+class DisQuestV2(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
 
     @commands.command(
         name="rank", help="Displays the most active members of your server!"
+    )
+    @slash_command(
+        name="rank",
+        description="Displays the most active members of your server!",
+        guild_ids=[866199405090308116],
     )
     async def rank(self, ctx):
         gid = ctx.guild.id
         meta = MetaData()
         engine = create_async_engine(
-            f"postgresql+asyncpg://{Username}:{Password}@{IP}:5432/disquest"
+            f"postgresql+asyncpg://{Username}:{Password}@{IP}:5432/rin-disquest"
         )
         users = Table(
-            "user",
+            "users",
             meta,
             Column(
                 "tracking_id",
@@ -190,19 +176,27 @@ class DisQuest(commands.Cog):
             embedVar = discord.Embed(
                 color=discord.Color.from_rgb(254, 255, 217))
             embedVar.description = f"**Server Rankings**\n{''.join(members)}"
-            await ctx.send(embed=embedVar)
+            await ctx.respond(embed=embedVar)
 
-    @commands.command(
+    asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+
+
+class DisQuestV3(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+
+    @slash_command(
         name="globalrank",
-        help="Displays the most active members of all servers that this bot is connected to!",
+        description="Displays the most active members of all servers that this bot is connected to!",
+        guild_ids=[866199405090308116],
     )
     async def grank(self, ctx):
         meta = MetaData()
         engine = create_async_engine(
-            f"postgresql+asyncpg://{Username}:{Password}@{IP}:5432/disquest"
+            f"postgresql+asyncpg://{Username}:{Password}@{IP}:5432/rin-disquest"
         )
         users = Table(
-            "user",
+            "users",
             meta,
             Column(
                 "tracking_id",
@@ -234,7 +228,14 @@ class DisQuest(commands.Cog):
             embedVar = discord.Embed(
                 color=discord.Color.from_rgb(217, 255, 251))
             embedVar.description = f"**Global Rankings**\n{''.join(members)}"
-            await ctx.send(embed=embedVar)
+            await ctx.respond(embed=embedVar)
+
+    asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+
+
+class DisQuestV4(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
 
     @commands.Cog.listener()
     async def on_message(self, ctx):
@@ -244,7 +245,11 @@ class DisQuest(commands.Cog):
         reward = random.randint(0, 20)
         await user.addxp(reward)
 
+    asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
 
 def setup(bot):
     bot.add_cog(DisQuest(bot))
+    bot.add_cog(DisQuestV2(bot))
+    bot.add_cog(DisQuestV3(bot))
+    bot.add_cog(DisQuestV4(bot))
